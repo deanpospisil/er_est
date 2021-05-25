@@ -4,20 +4,20 @@
 Created on Tue Jan 12 09:26:15 2021.
 
 Functions for estimating r^2 between neural tuning curve and model (n2m)
-and between two neural tuning curves (n2n). See examples.py to see example
+and between two neural tuning curves (n2n). See examples ipynb's to see example
 code applying estimators to simulated data and plotting results.
 
 For n2m functions see:
 Pospisil and Bair (2020) The unbiased estimation of the fraction of variance
-explained by a model. BioArxiv
+explained by a model. BioArxiv.
 
 For n2n functions see:
 Pospisil and Bair (2021) The unbiased estimation of $r^2$ between two sets of
-noisy neural responses. BioArxiv
+noisy neural responses. BioArxiv.
 
 For the split version of n2n see:
-Pospisil and Bair (in review) Accounting for biases in the estimation of
-neuronal signal correlation.
+Pospisil and Bair (2021) Accounting for biases in the estimation of
+neuronal signal correlation. Journal of Neuroscience.
 
 @author: dean
 """
@@ -25,7 +25,7 @@ neuronal signal correlation.
 import numpy as np
 from scipy import stats
 
-
+##################### n2m ###############################################
 def r2er_n2m(x, y):
     """Neuron to model approx. unbiased estimator of r2er.
 
@@ -522,38 +522,7 @@ def get_pbs_bca_ci(x, y, alpha_targ, n_bs_samples):
     return [ci_low, ci_high]
 
 
-def r2er_n2n_split(x, y, k_splits=100):
-    """r2er_n2n except calculated over non-overlapping random splits.
-
-    This should be used when trials are collected simultaneously and their may
-    be noise correlation. Doesn't broadcast over multiple neuron pairs
-
-    Parameters
-    ----------
-    x : numpy.ndarray
-        N neurons X n trials X m observations array
-    y : numpy.ndarray
-        N neurons X n trials X m observations array
-    k : int
-        number of splits to average over
-
-    Returns
-    -------
-    hat_r2er_split : an estimate of the r2 between the expected values of
-                     the data averaged over k splits
-    --------
-    """
-    n, m = y.shape[-2:]
-    split_inds = np.array(rand_splits(n, k_splits))
-    hat_r2er_split = np.array([r2er_n2n(x[..., a, :],
-                                        y[..., b, :])[0].squeeze()
-                               for (a, b) in split_inds]).mean(0)
-
-    return hat_r2er_split
-
 # %% other n2m estimators implementation
-
-
 def rand_splits(n, k):
     """Give indices for splitting into non-overlapping trials.
 
@@ -813,9 +782,7 @@ def snr_er_est(y):
     return snr_er
 
 
-# %% n2n
-
-
+##################### n2n ###############################################
 def r2er_n2n(x, y):
     """Neuron to neuron approx. unbiased estimator of r2er.
 
@@ -927,6 +894,35 @@ def sim_n2n(r2er, sig2, d2x, d2y, n, m, n_exps, verbose=True):
     return x, y
 
 # %% alternative n2n estimator
+
+def r2er_n2n_split(x, y, k_splits=100):
+    """r2er_n2n except calculated over non-overlapping random splits.
+
+    This should be used when trials are collected simultaneously and their may
+    be noise correlation. Doesn't broadcast over multiple neuron pairs
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        N neurons X n trials X m observations array
+    y : numpy.ndarray
+        N neurons X n trials X m observations array
+    k : int
+        number of splits to average over
+
+    Returns
+    -------
+    hat_r2er_split : an estimate of the r2 between the expected values of
+                     the data averaged over k splits
+    --------
+    """
+    n, m = y.shape[-2:]
+    split_inds = np.array(rand_splits(n, k_splits))
+    hat_r2er_split = np.array([r2er_n2n(x[..., a, :],
+                                        y[..., b, :])[0].squeeze()
+                               for (a, b) in split_inds]).mean(0)
+
+    return hat_r2er_split
 
 
 def hat_rho_0_spearman(x, y, correct_d2=True):
